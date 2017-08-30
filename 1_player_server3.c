@@ -129,7 +129,7 @@ int main(int argc, char **argv)
     }
 
     // Receive until the peer shuts down the connection
-    // ÀÌºÎºĞ¿¡¼­ ¼­¹ö ÀÛ¾÷ Ã³¸®
+    // ì´ë¶€ë¶„ì—ì„œ ì„œë²„ ì‘ì—… ì²˜ë¦¬
 
     do
     {
@@ -437,7 +437,7 @@ int main(int argc, char **argv)
 
     // cleanup
     printf("Disconnected");
-    close(ClientSocket); /* ¿¬°á Á¾·á */
+    close(ClientSocket); /* ì—°ê²° ì¢…ë£Œ */
     WSACleanup();
 
     return 0;
