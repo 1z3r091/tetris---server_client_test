@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
     system("cls");
 
     // Receive until the peer closes the connection
-    // ΐΜ ΊΞΊΠΏ΅Ό­ Ε¬¶σΐΜΎπΖ® ΐΫΎχ Γ³Έ®
+    // μ΄ λ¶€λ¶„μ—μ„ ν΄λΌμ΄μ–ΈνΈ μ‘μ—… μ²λ¦¬
     srand(time(NULL));
     setCursorType(NOCURSOR);
 
