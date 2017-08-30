@@ -29,12 +29,14 @@
 #define TWO 1
 #define PLAYER_NUM 2
 
-typedef struct {
+typedef struct
+{
     int x;
     int y;
 } Point;
 
-typedef struct {
+typedef struct
+{
     int shape;
     int next_shape;
     int rotation;
@@ -63,12 +65,12 @@ void showNextBlock(BOOL show, int nplayer, Player *player);
 void moveBlock(int nplayer, Player *player);
 BOOL checkSpace(int x, int y, int rotation,int nplayer, Player *player);
 BOOL testFull(int nplayer, Player *player);
-BOOL keyInput(int nplayer, Player *player);
+BOOL keyInput(int nplayer, Player *player, SOCKET sock);
 void gameStart(int nplayer, SOCKET sock, Player *player);
 void showStartMenu(void);
 void showGameOver(int nx, int ny, int nplayer, Player *player);
 void refreshSideBoard(int nx, int nplayer, Player *player);
-void showNextStage(int nx, int nplayer, Player *player);
+void showNextStage(int nplayer, Player *player);
 void copyGameBoard(int nplayer, Player *player);
 
 void initializeBlockSetting(int nplayer, Player *player);
@@ -78,5 +80,5 @@ void initializePlayerSetting(int nplayer, Player *player);
 BOOL checkNextSpace(int nplayer, Player *player);
 BOOL checkNextStage(int nplayer, Player *player);
 void initializeNextStage(int nplayer, Player *player);
-
+void saveBlockinBoard(int nplayer, Player *player);
 #endif // TETRIS_H_INCLUDED
