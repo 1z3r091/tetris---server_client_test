@@ -22,7 +22,8 @@ int main(int argc, char* argv[])
     struct sockaddr_in peer;
 
     char message[30] = {0,};
-    int id;
+    //int id;
+    char id;
     Player player[PLAYER_NUM];
 
 
@@ -53,12 +54,12 @@ int main(int argc, char* argv[])
     }
 
     // receive id
-    iResult = recv(ConnectSocket, &id, (int)sizeof(id), 0);
+    iResult = recv(ConnectSocket, &id, sizeof(id), 0);
     if (iResult == SOCKET_ERROR)
     {
         ErrorHandling("connect() error!");
     }
-    printf("Connecting to Server... %d\n", ntohl(id));
+    printf("Connecting to Server... %d\n", id);//ntohl(id));
 
     // receive Player structure
     iResult = recv(ConnectSocket, (char *)&player[id], sizeof(Player), 0);
@@ -70,13 +71,13 @@ int main(int argc, char* argv[])
     system("cls");
 
     // Receive until the peer closes the connection
-    // ì´ ë¶€ë¶„ì—ì„œ í´ë¼ì´ì–¸íŠ¸ ì‘ì—… ì²˜ë¦¬
+    // ÀÌ ºÎºĞ¿¡¼­ Å¬¶óÀÌ¾ğÆ® ÀÛ¾÷ Ã³¸®
     srand(time(NULL));
     setCursorType(NOCURSOR);
 
     showStartMenu();
-    drawCompleteBoard(id,&player[id]);
-    showCurrentnNextBlock(id,&player[id]);
+    drawCompleteBoard(&player[id]);
+    showCurrentnNextBlock(&player[id]);
 
     do
     {
