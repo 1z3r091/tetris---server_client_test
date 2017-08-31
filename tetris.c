@@ -44,68 +44,69 @@ Player player[PLAYER_NUM];
 char message[30] = {0,};
 int iResult;
 BOOL check;
+int key_input_frame = 100;
 // FUNCTION DEFINITION
 
 void initializePlayerSetting(int nplayer, Player *player)
 {
-    player[nplayer].stage_level = 1; // initial stage level
-    player[nplayer].stage_clear_cnt = player[nplayer].stage_level * 1 ; // clear line cnt limit for each stage level
-    player[nplayer].clear_cnt = 0;
-    player[nplayer].board_x = nplayer * 51;
-    player[nplayer].stay_time = player[nplayer].frame_time = 15;
-    player[nplayer].score = 0;
-    player[nplayer].stage_level = 0;
+    player->stage_level = 1; // initial stage level
+    player->stage_clear_cnt = player->stage_level * 1; // clear line cnt limit for each stage level
+    player->clear_cnt = 0;
+    player->board_x = nplayer * 51;
+    player->stay_time = player->frame_time = 15;
+    player->score = 0;
+    player->stage_level = 0;
 }
 
 // 로직
-void copyGameBoard(int nplayer, Player *player)
+void copyGameBoard(Player *player)
 {
     int x, y;
     for (x = 1; x < BOARD_WIDTH + 1; x++)
     {
         for (y = 1; y < BOARD_HEIGHT + 1; y++)
         {
-            player[nplayer].copy_game_board[x][y] = player[nplayer].game_board[x][y];
+            player->copy_game_board[x][y] = player->game_board[x][y];
         }
     }
 }
 
 // 뷰
-void showNextStage(int nplayer, Player *player)
+void showNextStage(Player *player)
 {
     // set color
     SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ), 7);
 
-    gotoXY(player[nplayer].board_x+BOARD_START_X+5,BOARD_START_Y+4);
+    gotoXY(player->board_x+BOARD_START_X+5,BOARD_START_Y+4);
     printf("+-------------+");
-    gotoXY(player[nplayer].board_x+BOARD_START_X+5,BOARD_START_Y+5);
-    printf("|  Stage %d    |", player[nplayer].stage_level);
-    gotoXY(player[nplayer].board_x+BOARD_START_X+5,BOARD_START_Y+6);
+    gotoXY(player->board_x+BOARD_START_X+5,BOARD_START_Y+5);
+    printf("|  Stage %d    |", player->stage_level);
+    gotoXY(player->board_x+BOARD_START_X+5,BOARD_START_Y+6);
     printf("+-------------+");
     Sleep(3000);
     //initializeBoard(nplayer,&player[nplayer]);
-    //drawBoard(player[nplayer].board_x, nplayer, &player[nplayer]);
-    //refreshSideBoard(player[nplayer].board_x, nplayer,&player[nplayer]);
+    //drawBoard(player->board_x, nplayer, &player[nplayer]);
+    //refreshSideBoard(player->board_x, nplayer,&player[nplayer]);
 }
 
 // 뷰
-void refreshSideBoard(int nx, int nplayer, Player *player)
+void refreshSideBoard(Player *player)
 {
     // set color
     SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ), 7);
 
-    gotoXY(BOARD_START_X+25+nx,BOARD_START_Y);
+    gotoXY(BOARD_START_X+25+player->board_x,BOARD_START_Y);
     printf("                ");
-    gotoXY(BOARD_START_X+25+nx,BOARD_START_Y);
-    printf("Stage: %6d", player[nplayer].stage_level);
-    gotoXY(BOARD_START_X+25+nx,BOARD_START_Y+1);
+    gotoXY(BOARD_START_X+25+player->board_x,BOARD_START_Y);
+    printf("Stage: %6d", player->stage_level);
+    gotoXY(BOARD_START_X+25+player->board_x,BOARD_START_Y+1);
     printf("                ");
-    gotoXY(BOARD_START_X+25+nx,BOARD_START_Y+1);
-    printf("Score: %6d", player[nplayer].score);
+    gotoXY(BOARD_START_X+25+player->board_x,BOARD_START_Y+1);
+    printf("Score: %6d", player->score);
 }
 
 // 뷰
-void showNextBlock(BOOL show, int nplayer, Player *player)
+void showNextBlock(BOOL show, Player *player)
 {
     int nx, ny;
     int i;
@@ -116,7 +117,7 @@ void showNextBlock(BOOL show, int nplayer, Player *player)
         SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ), 15);
         for (i = 0; i < 4; i++)
         {
-            gotoXY(player[nplayer].board_x + nx + block_shape_coordinate[player[nplayer].next_shape][0][i].x*(BLOCK_SHAPE_SIZE-1), ny + block_shape_coordinate[player[nplayer].next_shape][0][i].y);
+            gotoXY(player->board_x + nx + block_shape_coordinate[player->next_shape][0][i].x*(BLOCK_SHAPE_SIZE-1), ny + block_shape_coordinate[player->next_shape][0][i].y);
             printf("%s", block_shape[FILLED_BLOCK]);
         }
     }
@@ -124,7 +125,7 @@ void showNextBlock(BOOL show, int nplayer, Player *player)
     {
         for (i = 0; i < 4; i++)
         {
-            gotoXY(player[nplayer].board_x + nx + block_shape_coordinate[player[nplayer].next_shape][0][i].x*(BLOCK_SHAPE_SIZE-1), ny + block_shape_coordinate[player[nplayer].next_shape][0][i].y);
+            gotoXY(player->board_x + nx + block_shape_coordinate[player->next_shape][0][i].x*(BLOCK_SHAPE_SIZE-1), ny + block_shape_coordinate[player->next_shape][0][i].y);
             printf("%s", block_shape[EMPTY]);
         }
     }
@@ -201,12 +202,14 @@ void showStartMenu(void)
 }
 
 // 뷰
-void showGameOver(int nx, int ny, int nplayer, Player *player)
+void showGameOver(int nplayer, Player *player)
 {
+    int nx = player->board_x + 3;
+    int ny = 7;
     gotoXY(nx,ny);
     printf("+---------------------------+");
     gotoXY(nx,ny+1);
-    printf("|     Your Score : %6d   |", player[nplayer].score);
+    printf("|     Your Score : %6d   |", player->score);
     gotoXY(nx,ny+2);
     printf("|                           |");
     gotoXY(nx,ny+3);
@@ -234,26 +237,27 @@ void showGameOver(int nx, int ny, int nplayer, Player *player)
 }
 
 // 로직
-void initializeBlockSetting(int nplayer, Player *player)
+void initializeBlockSetting(Player *player)
 {
     // 블럭 모양 설정
-    player[nplayer].next_shape = rand() % BLOCK_NUMBER;
-    player[nplayer].rotation = 0;
-    player[nplayer].block_x = 10;
-    player[nplayer].block_y = 4;
+    // player->shape = rand() % BLOCK_NUMBER;
+    player->next_shape = rand() % BLOCK_NUMBER;
+    player->rotation = 0;
+    player->block_x = 10;
+    player->block_y = 4;
 }
 
 // 뷰
-void showCurrentnNextBlock(int nplayer, Player *player)
+void showCurrentnNextBlock(Player *player)
 {
-    showBlock(TRUE,player[nplayer].board_x,&player[nplayer]);
-    showNextBlock(TRUE,player[nplayer].board_x, &player[nplayer]);
+    showBlock(TRUE,player);
+    showNextBlock(TRUE,player);
 }
 
 // 로직
-BOOL checkGameOver(int nplayer, Player *player)
+BOOL checkGameOver(Player *player)
 {
-    if (checkSpace(player[nplayer].block_x, player[nplayer].block_y, player[nplayer].rotation,nplayer,&player[nplayer]) == FALSE)
+    if (checkSpace(player->block_x, player->block_y, player->rotation,player)==FALSE)
     {
         return FALSE;
     }
@@ -264,9 +268,10 @@ BOOL checkGameOver(int nplayer, Player *player)
 void gameStart(int nplayer, SOCKET sock, Player *player)
 {
     // 블럭 한칸씩 아래로 이동
-    if (--player[nplayer].stay_time == 0)
+
+    if (--player->stay_time == 0)
     {
-        player[nplayer].stay_time = player[nplayer].frame_time;
+        player->stay_time = player->frame_time;
 
         // send nextspace message
         strcpy(message, "nextspace");
@@ -276,7 +281,7 @@ void gameStart(int nplayer, SOCKET sock, Player *player)
         iResult = recv(sock, &check, sizeof(check),0);
         if (iResult == SOCKET_ERROR)
             printf("ERROR");
-        // printf("%d", check);
+        //printf("%d", check);
 
         if (check == FALSE)   // check nextspace
         {
@@ -303,11 +308,11 @@ void gameStart(int nplayer, SOCKET sock, Player *player)
                     printf("ERROR");
 
                 // if next stage
-                if ( check )  //checkNextStage(nplayer, &player[nplayer])) {
+                if ( check )  //checkNextStage
                 {
-                    showNextStage(nplayer, &player[nplayer]);
-                    refreshSideBoard(player[nplayer].board_x,nplayer, &player[nplayer]);
-                    drawBoard(player[nplayer].board_x,nplayer, &player[nplayer]);
+                    showNextStage(player);
+                    refreshSideBoard(player);
+                    drawBoard(player);
                 }
 
                 // if not next stage
@@ -324,30 +329,30 @@ void gameStart(int nplayer, SOCKET sock, Player *player)
             if ( check == FALSE )  // checkGameOver
             {
                 // 뷰
-                showGameOver(player[nplayer].board_x+3,7,nplayer, &player[nplayer]);
-                drawCompleteBoard(nplayer,&player[nplayer]);
-                showNextBlock(TRUE,nplayer,&player[nplayer]);
+                showGameOver(nplayer, player);
+                drawCompleteBoard(player);
+                showNextBlock(TRUE,player);
             }
             // GameOver TRUE -> no GameOver
-            showNextBlock(FALSE,nplayer,&player[nplayer]);
-            iResult = recv(sock, (char *)&player[nplayer], sizeof(Player), 0);
+            showNextBlock(FALSE,player);
+            iResult = recv(sock, (char *)player, sizeof(Player), 0);
             if (iResult == SOCKET_ERROR)
             {
                 //ErrorHandling("connect() error!");
             }
-            refreshSideBoard(player[nplayer].board_x,nplayer, &player[nplayer]);
-            drawBoard(player[nplayer].board_x, nplayer,&player[nplayer]);
-            showCurrentnNextBlock(nplayer, &player[nplayer]);
+            refreshSideBoard(player);
+            drawBoard(player);
+            showCurrentnNextBlock(player);
         }
         else     // nextspace TRUE
         {
-            moveBlock(nplayer, &player[nplayer]);
+            moveBlock(player);
         }
     }
 
     // 키보드 입력 읽기
     // 로직
-    if (keyInput(nplayer, &player[nplayer], sock) == FALSE)   // 입력 도중 더이상 내려갈 공간 없다 -> break
+    if (keyInput(nplayer, player, sock) == FALSE)   // 입력 도중 더이상 내려갈 공간 없다 -> break
     {
         // send testfull message
         strcpy(message, "testfull");
@@ -373,11 +378,11 @@ void gameStart(int nplayer, SOCKET sock, Player *player)
             // if next stage
             if ( check )  //checkNextStage
             {
-                showNextStage(nplayer, &player[nplayer]);
-                refreshSideBoard(player[nplayer].board_x,nplayer, &player[nplayer]);
+                showNextStage(player);
+                refreshSideBoard(player);
 
-                drawBoard(player[nplayer].board_x,nplayer, &player[nplayer]);
-                showNextBlock(TRUE,nplayer,&player[nplayer]);
+                drawBoard(player);
+                showNextBlock(TRUE,player);
             }
             // if next stage not TRUE
         }
@@ -390,22 +395,22 @@ void gameStart(int nplayer, SOCKET sock, Player *player)
         iResult = recv(sock, &check, sizeof(check),0);
         if (iResult == SOCKET_ERROR)
             printf("ERROR");
-        if ( check == FALSE )  // checkGameOver(nplayer,&player[nplayer])) {
+        if ( check == FALSE )  // checkGameOver
         {
-            showGameOver(player[nplayer].board_x+3,7,nplayer, &player[nplayer]);
-            drawCompleteBoard(nplayer,&player[nplayer]);
+            showGameOver(nplayer, player);
+            drawCompleteBoard(player);
         }
-        showNextBlock(FALSE,nplayer,&player[nplayer]);
+        showNextBlock(FALSE,player);
 
-        iResult = recv(sock, (char *)&player[nplayer], sizeof(Player), 0);
+        iResult = recv(sock, (char *)player, sizeof(Player), 0);
         if (iResult == SOCKET_ERROR)
         {
             //ErrorHandling("connect() error!");
         }
-        refreshSideBoard(player[nplayer].board_x,nplayer, &player[nplayer]);
-        drawBoard(player[nplayer].board_x, nplayer,&player[nplayer]);
+        refreshSideBoard(player);
+        drawBoard(player);
 
-        showCurrentnNextBlock(nplayer, &player[nplayer]);
+        showCurrentnNextBlock(player);
     }
 
     Sleep(30);
@@ -442,7 +447,7 @@ void gotoXY(int x, int y)
 }
 
 // 로직
-void initializeBoard(int nplayer, Player *player)
+void initializeBoard(Player *player)
 {
     int x,y;
 
@@ -452,11 +457,11 @@ void initializeBoard(int nplayer, Player *player)
         {
             if (y == 0 || x == 0 || y == BOARD_HEIGHT+1 || x == BOARD_WIDTH+1)
             {
-                player[nplayer].game_board[x][y] = BOARD_FRAME;
+                player->game_board[x][y] = BOARD_FRAME;
             }
             else
             {
-                player[nplayer].game_board[x][y] = EMPTY;
+                player->game_board[x][y] = EMPTY;
             }
         }
     }
@@ -464,7 +469,7 @@ void initializeBoard(int nplayer, Player *player)
 }
 
 // 뷰
-void drawCompleteBoard(int nplayer, Player *player)
+void drawCompleteBoard(Player *player)
 {
     int x, y;
     system("cls");
@@ -472,56 +477,56 @@ void drawCompleteBoard(int nplayer, Player *player)
     {
         for (y = 0; y <  BOARD_HEIGHT+2; y++)
         {
-            if (player[nplayer].game_board[x][y] == BOARD_FRAME)
+            if (player->game_board[x][y] == BOARD_FRAME)
             {
-                gotoXY(BOARD_START_X+x*(BLOCK_SHAPE_SIZE-1)+player[nplayer].board_x,BOARD_START_Y+y);
+                gotoXY(BOARD_START_X+x*(BLOCK_SHAPE_SIZE-1)+player->board_x,BOARD_START_Y+y);
                 printf("%s", block_shape[BOARD_FRAME]);
             }
         }
     }
 
-    gotoXY(BOARD_START_X+25+player[nplayer].board_x,BOARD_START_Y);
-    printf("Stage: %6d", player[nplayer].stage_level);
-    gotoXY(BOARD_START_X+25+player[nplayer].board_x,BOARD_START_Y+1);
-    printf("Score: %6d", player[nplayer].score);
-    gotoXY(BOARD_START_X+25+player[nplayer].board_x,BOARD_START_Y+2);
+    gotoXY(BOARD_START_X+25+player->board_x,BOARD_START_Y);
+    printf("Stage: %6d", player->stage_level);
+    gotoXY(BOARD_START_X+25+player->board_x,BOARD_START_Y+1);
+    printf("Score: %6d", player->score);
+    gotoXY(BOARD_START_X+25+player->board_x,BOARD_START_Y+2);
     printf("Next Shape");
-    gotoXY(BOARD_START_X+25+player[nplayer].board_x,BOARD_START_Y+3);
+    gotoXY(BOARD_START_X+25+player->board_x,BOARD_START_Y+3);
     printf("+============+");
-    gotoXY(BOARD_START_X+25+player[nplayer].board_x,BOARD_START_Y+4);
+    gotoXY(BOARD_START_X+25+player->board_x,BOARD_START_Y+4);
     printf("|            |");
-    gotoXY(BOARD_START_X+25+player[nplayer].board_x,BOARD_START_Y+5);
+    gotoXY(BOARD_START_X+25+player->board_x,BOARD_START_Y+5);
     printf("|            |");
-    gotoXY(BOARD_START_X+25+player[nplayer].board_x,BOARD_START_Y+6);
+    gotoXY(BOARD_START_X+25+player->board_x,BOARD_START_Y+6);
     printf("|            |");
-    gotoXY(BOARD_START_X+25+player[nplayer].board_x,BOARD_START_Y+7);
+    gotoXY(BOARD_START_X+25+player->board_x,BOARD_START_Y+7);
     printf("|            |");
-    gotoXY(BOARD_START_X+25+player[nplayer].board_x,BOARD_START_Y+8);
+    gotoXY(BOARD_START_X+25+player->board_x,BOARD_START_Y+8);
     printf("+============+");
 }
 
 // 뷰
-void drawBoard(int nx, int nplayer, Player *player)
+void drawBoard(Player *player)
 {
     int x, y;
     for (x = 1; x < BOARD_WIDTH+1; x++)
     {
         for (y = 1; y <  BOARD_HEIGHT+1; y++)
         {
-            if (player[nplayer].game_board[x][y] == BLOCK)
+            if (player->game_board[x][y] == BLOCK)
             {
-                gotoXY(nx + BOARD_START_X+x*(BLOCK_SHAPE_SIZE-1),BOARD_START_Y+y);
+                gotoXY(player->board_x + BOARD_START_X+x*(BLOCK_SHAPE_SIZE-1),BOARD_START_Y+y);
                 printf("%s", block_shape[BLOCK]);
             }
-            else if (player[nplayer].game_board[x][y] == FILLED_BLOCK && player[nplayer].copy_game_board[x][y] != player[nplayer].game_board[x][y])
+            else if (player->game_board[x][y] == FILLED_BLOCK && player->copy_game_board[x][y] != player->game_board[x][y])
             {
-                SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ), player[nplayer].shape + 10);
-                gotoXY(nx + BOARD_START_X+x*(BLOCK_SHAPE_SIZE-1),BOARD_START_Y+y);
+                SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ), player->shape + 10);
+                gotoXY(player->board_x + BOARD_START_X+x*(BLOCK_SHAPE_SIZE-1),BOARD_START_Y+y);
                 printf("%s", block_shape[FILLED_BLOCK]);
             }
-            else if (player[nplayer].game_board[x][y] == EMPTY)
+            else if (player->game_board[x][y] == EMPTY)
             {
-                gotoXY(nx + BOARD_START_X+x*(BLOCK_SHAPE_SIZE-1),BOARD_START_Y+y);
+                gotoXY(player->board_x + BOARD_START_X+x*(BLOCK_SHAPE_SIZE-1),BOARD_START_Y+y);
                 printf("%s", block_shape[EMPTY]);
             }
         }
@@ -529,16 +534,16 @@ void drawBoard(int nx, int nplayer, Player *player)
 }
 // 뷰
 
-void showBlock(BOOL show, int nplayer, Player *player)
+void showBlock(BOOL show, Player *player)
 {
     int i;
     if (show == TRUE)
     {
         for (i = 0; i < 4; i++)
         {
-            gotoXY(player[nplayer].board_x+BOARD_START_X + block_shape_coordinate[player[nplayer].shape][player[nplayer].rotation][i].x*(BLOCK_SHAPE_SIZE-1) + player[nplayer].block_x, BOARD_START_Y +block_shape_coordinate[player[nplayer].shape][player[nplayer].rotation][i].y + player[nplayer].block_y);
+            gotoXY(player->board_x+BOARD_START_X + block_shape_coordinate[player->shape][player->rotation][i].x*(BLOCK_SHAPE_SIZE-1) + player->block_x, BOARD_START_Y +block_shape_coordinate[player->shape][player->rotation][i].y + player->block_y);
             // set block color
-            SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ), player[nplayer].shape + 10);
+            SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ), player->shape + 10);
 
             printf("%s", block_shape[BLOCK]);
         }
@@ -547,16 +552,16 @@ void showBlock(BOOL show, int nplayer, Player *player)
     {
         for (i = 0; i < 4; i++)
         {
-            gotoXY(player[nplayer].board_x+BOARD_START_X + block_shape_coordinate[player[nplayer].shape][player[nplayer].rotation][i].x*(BLOCK_SHAPE_SIZE-1) + player[nplayer].block_x, BOARD_START_Y +block_shape_coordinate[player[nplayer].shape][player[nplayer].rotation][i].y + player[nplayer].block_y);
+            gotoXY(player->board_x+BOARD_START_X + block_shape_coordinate[player->shape][player->rotation][i].x*(BLOCK_SHAPE_SIZE-1) + player->block_x, BOARD_START_Y +block_shape_coordinate[player->shape][player->rotation][i].y + player->block_y);
             printf("%s", block_shape[EMPTY]);
         }
     }
 }
 
 // 로직
-BOOL checkNextStage(int nplayer, Player *player)
+BOOL checkNextStage(Player *player)
 {
-    if (player[nplayer].clear_cnt >= player[nplayer].stage_clear_cnt)
+    if (player->clear_cnt >= player->stage_clear_cnt)
     {
         return TRUE;
     }
@@ -564,15 +569,15 @@ BOOL checkNextStage(int nplayer, Player *player)
 }
 
 // 로직
-void initializeNextStage(int nplayer, Player *player)
+void initializeNextStage(Player *player)
 {
-    player[nplayer].clear_cnt = 0;
-    player[nplayer].stage_level += 1;
-    player[nplayer].frame_time /= 2; // move speed increase
+    player->clear_cnt = 0;
+    player->stage_level += 1;
+    player->frame_time /= 2; // move speed increase
 }
 
 // 로직
-BOOL checkSpace(int x, int y, int rotation, int nplayer, Player *player)
+BOOL checkSpace(int x, int y, int rotation, Player *player)
 {
     int i;
     int block_temp_x = x;
@@ -584,27 +589,8 @@ BOOL checkSpace(int x, int y, int rotation, int nplayer, Player *player)
 
     for (i = 0; i < 4; i++)
     {
-        if (player[nplayer].game_board[(block_shape_coordinate[player[nplayer].shape][temp_rotation][i].x*(BLOCK_SHAPE_SIZE-1)+block_temp_x)/2][block_shape_coordinate[player[nplayer].shape][temp_rotation][i].y + block_temp_y] != EMPTY)
+        if (player->game_board[(block_shape_coordinate[player->shape][temp_rotation][i].x*(BLOCK_SHAPE_SIZE-1)+block_temp_x)/2][block_shape_coordinate[player->shape][temp_rotation][i].y + block_temp_y] != EMPTY)
         {
-            /*
-            if (block_temp_y > player[nplayer].block_y) {
-                if (testFull(nplayer, &player[nplayer])) {
-                     // if next stage
-                     if (checkNextStage(nplayer, &player[nplayer])) {
-                        initializeNextStage(nplayer, &player[nplayer]);
-                        refreshSideBoard(player[nplayer].board_x,nplayer, &player[nplayer]);
-                        initializeBoard(nplayer, &player[nplayer]);
-                        drawBoard(player[nplayer].board_x,nplayer, &player[nplayer]);
-                        copyGameBoard(nplayer, &player[nplayer]);
-                        showNextStage(player[nplayer].board_x, nplayer, &player[nplayer]);
-                     }
-                     // if not next stage
-                     refreshSideBoard(player[nplayer].board_x,nplayer, &player[nplayer]);
-                     drawBoard(player[nplayer].board_x, nplayer,&player[nplayer]);
-                     copyGameBoard(nplayer, &player[nplayer]);
-                }
-            }
-            */
             return FALSE;
         }
     }
@@ -612,9 +598,9 @@ BOOL checkSpace(int x, int y, int rotation, int nplayer, Player *player)
 }
 
 // 로직
-BOOL checkNextSpace(int nplayer, Player *player)
+BOOL checkNextSpace(Player *player)
 {
-    if (checkSpace(player[nplayer].block_x, player[nplayer].block_y+1, player[nplayer].rotation,nplayer,&player[nplayer]) == FALSE)
+    if (checkSpace(player->block_x, player->block_y+1, player->rotation, player) == FALSE)
     {
         return FALSE;
     }
@@ -622,37 +608,36 @@ BOOL checkNextSpace(int nplayer, Player *player)
 }
 
 // 뷰
-void moveBlock(int nplayer, Player *player)
+void moveBlock(Player *player)
 {
-    showBlock(FALSE,nplayer, &player[nplayer]);
-    player[nplayer].block_y += 1;
-    showBlock(TRUE,nplayer, &player[nplayer]);
+    showBlock(FALSE,player);
+    player->block_y += 1;
+    showBlock(TRUE, player);
 }
-void saveBlockinBoard(int nplayer, Player *player)
+
+void saveBlockinBoard(Player *player)
 {
     int i;
 
     for (i = 0; i < 4; i++)
     {
-        player[nplayer].game_board[(block_shape_coordinate[player[nplayer].shape][player[nplayer].rotation][i].x*(BLOCK_SHAPE_SIZE-1)+player[nplayer].block_x)/2][block_shape_coordinate[player[nplayer].shape][player[nplayer].rotation][i].y + player[nplayer].block_y] = FILLED_BLOCK;
+        player->game_board[(block_shape_coordinate[player->shape][player->rotation][i].x*(BLOCK_SHAPE_SIZE-1)+player->block_x)/2][block_shape_coordinate[player->shape][player->rotation][i].y + player->block_y] = FILLED_BLOCK;
     }
 }
 // 로직
-BOOL testFull(int nplayer, Player *player)
+BOOL testFull(Player *player)
 {
     int i,x,y;
     int temp_y;
     int combo = 1;
-    int full_cnt = 0;
 
-    saveBlockinBoard(nplayer, &player[nplayer]);
-
+    saveBlockinBoard(player);
 
     for (y = BOARD_HEIGHT; y > 1; y--)
     {
         for (x = 1; x < BOARD_WIDTH + 1; x++)
         {
-            if (player[nplayer].game_board[x][y] == EMPTY)
+            if (player->game_board[x][y] == EMPTY)
             {
                 return TRUE;
             }
@@ -660,17 +645,17 @@ BOOL testFull(int nplayer, Player *player)
         if (x == BOARD_WIDTH + 1)
         {
             // score
-            player[nplayer].score += combo * 100;
+            player->score += combo * 100;
             combo++;
 
             // nextStage
-            player[nplayer].clear_cnt += 1;
+            player->clear_cnt += 1;
 
             for (temp_y = y; temp_y > 1; temp_y--)
             {
                 for (x = 1; x < BOARD_WIDTH + 1; x++)
                 {
-                    player[nplayer].game_board[x][temp_y] = player[nplayer].game_board[x][temp_y-1];
+                    player->game_board[x][temp_y] = player->game_board[x][temp_y-1];
                 }
             }
             y++;
@@ -683,7 +668,7 @@ BOOL keyInput(int nplayer, Player *player, SOCKET sock)
 {
     int key;
     int temp_rotation;
-    int key_input_frame;
+    // int key_input_frame;
 
     while (key_input_frame >= 0)
     {
@@ -696,13 +681,13 @@ BOOL keyInput(int nplayer, Player *player, SOCKET sock)
     {
         if (GetAsyncKeyState(VK_UP) & 0x8000)
         {
-            if (player[nplayer].rotation + 1 > 3)
+            if (player->rotation + 1 > 3)
             {
                 temp_rotation = 0;
             }
             else
             {
-                temp_rotation = player[nplayer].rotation + 1;
+                temp_rotation = player->rotation + 1;
             }
             // send checkrotate message
             strcpy(message, "checkrotate");
@@ -714,13 +699,13 @@ BOOL keyInput(int nplayer, Player *player, SOCKET sock)
                 printf("ERROR");
             if ( check )
             {
-                showBlock(FALSE,nplayer,&player[nplayer]);
-                iResult = recv(sock, (char *)&player[nplayer], sizeof(Player), 0);
+                showBlock(FALSE,player);
+                iResult = recv(sock, (char *)player, sizeof(Player), 0);
                 if (iResult == SOCKET_ERROR)
                 {
                     //ErrorHandling("connect() error!");
                 }
-                showBlock(TRUE,nplayer,&player[nplayer]);
+                showBlock(TRUE,player);
             }
         }
         else if (GetAsyncKeyState(VK_LEFT) & 0x8000)
@@ -735,13 +720,13 @@ BOOL keyInput(int nplayer, Player *player, SOCKET sock)
                 printf("ERROR");
             if ( check )
             {
-                showBlock(FALSE,nplayer,&player[nplayer]);
-                iResult = recv(sock, (char *)&player[nplayer], sizeof(Player), 0);
+                showBlock(FALSE,player);
+                iResult = recv(sock, (char *)player, sizeof(Player), 0);
                 if (iResult == SOCKET_ERROR)
                 {
                     //ErrorHandling("connect() error!");
                 }
-                showBlock(TRUE,nplayer,&player[nplayer]);
+                showBlock(TRUE,player);
             }
         }
         else if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
@@ -756,14 +741,14 @@ BOOL keyInput(int nplayer, Player *player, SOCKET sock)
                 printf("ERROR");
             if ( check )
             {
-                showBlock(FALSE,nplayer,&player[nplayer]);
+                showBlock(FALSE,player);
 
-                iResult = recv(sock, (char *)&player[nplayer], sizeof(Player), 0);
+                iResult = recv(sock, (char *)player, sizeof(Player), 0);
                 if (iResult == SOCKET_ERROR)
                 {
                     //ErrorHandling("connect() error!");
                 }
-                showBlock(TRUE,nplayer,&player[nplayer]);
+                showBlock(TRUE,player);
             }
         }
         else if (GetAsyncKeyState(VK_DOWN) & 0x8000)
@@ -778,13 +763,13 @@ BOOL keyInput(int nplayer, Player *player, SOCKET sock)
                 printf("ERROR");
             if (check)
             {
-                showBlock(FALSE,nplayer,&player[nplayer]);
-                iResult = recv(sock, (char *)&player[nplayer], sizeof(Player), 0);
+                showBlock(FALSE,player);
+                iResult = recv(sock, (char *)player, sizeof(Player), 0);
                 if (iResult == SOCKET_ERROR)
                 {
                     //ErrorHandling("connect() error!");
                 }
-                showBlock(TRUE,nplayer,&player[nplayer]);
+                showBlock(TRUE,player);
             }
             else
             {
@@ -798,13 +783,13 @@ BOOL keyInput(int nplayer, Player *player, SOCKET sock)
             if (iResult == SOCKET_ERROR)
                 printf("ERROR");
 
-            showBlock(FALSE,nplayer,&player[nplayer]);
-            iResult = recv(sock, (char *)&player[nplayer], sizeof(Player), 0);
+            showBlock(FALSE,player);
+            iResult = recv(sock, (char *)player, sizeof(Player), 0);
             if (iResult == SOCKET_ERROR)
             {
                 //ErrorHandling("connect() error!");
             }
-            showBlock(TRUE,nplayer,&player[nplayer]);
+            showBlock(TRUE,player);
             return FALSE;
         }
         // PLAYER 2
@@ -813,44 +798,95 @@ BOOL keyInput(int nplayer, Player *player, SOCKET sock)
     {
         if (GetAsyncKeyState('T') & 0x8000)
         {
-            if (player[nplayer].rotation + 1 > 3)
+            if (player->rotation + 1 > 3)
             {
                 temp_rotation = 0;
             }
             else
             {
-                temp_rotation = player[nplayer].rotation + 1;
+                temp_rotation = player->rotation + 1;
             }
-            if (checkSpace(player[nplayer].block_x, player[nplayer].block_y, temp_rotation,nplayer,&player[nplayer]))
+            // send checkrotate message
+            strcpy(message, "checkrotate");
+            iResult = send(sock, message, (int)strlen(message), 0);
+            if (iResult == SOCKET_ERROR)
+                printf("ERROR");
+            iResult = recv(sock, &check, sizeof(check),0);
+            if (iResult == SOCKET_ERROR)
+                printf("ERROR");
+            if ( check )
             {
-                showBlock(FALSE,nplayer,&player[nplayer]);
-                player[nplayer].rotation = temp_rotation;
-                showBlock(TRUE,nplayer,&player[nplayer]);
+                showBlock(FALSE,player);
+                iResult = recv(sock, (char *)player, sizeof(Player), 0);
+                if (iResult == SOCKET_ERROR)
+                {
+                    //ErrorHandling("connect() error!");
+                }
+                showBlock(TRUE,player);
             }
         }
         else if (GetAsyncKeyState('F') & 0x8000)
         {
-            if (checkSpace(player[nplayer].block_x-NEXT_SPACE, player[nplayer].block_y, player[nplayer].rotation,nplayer,&player[nplayer]))
+            // send checkleft message
+            strcpy(message, "checkleft");
+            iResult = send(sock, message, (int)strlen(message), 0);
+            if (iResult == SOCKET_ERROR)
+                printf("ERROR");
+            iResult = recv(sock, &check, sizeof(check),0);
+            if (iResult == SOCKET_ERROR)
+                printf("ERROR");
+            if ( check )
             {
-                showBlock(FALSE,nplayer,&player[nplayer]);
-                player[nplayer].block_x -= 2;
-                showBlock(TRUE,nplayer,&player[nplayer]);
+                showBlock(FALSE,player);
+                iResult = recv(sock, (char *)player, sizeof(Player), 0);
+                if (iResult == SOCKET_ERROR)
+                {
+                    //ErrorHandling("connect() error!");
+                }
+                showBlock(TRUE,player);
             }
         }
         else if (GetAsyncKeyState('H') & 0x8000)
         {
-            if (checkSpace(player[nplayer].block_x+NEXT_SPACE, player[nplayer].block_y, player[nplayer].rotation,nplayer,&player[nplayer]))
+            // send checkright message
+            strcpy(message, "checkright");
+            iResult = send(sock, message, (int)strlen(message), 0);
+            if (iResult == SOCKET_ERROR)
+                printf("ERROR");
+            iResult = recv(sock, &check, sizeof(check),0);
+            if (iResult == SOCKET_ERROR)
+                printf("ERROR");
+            if ( check )
             {
-                showBlock(FALSE,nplayer,&player[nplayer]);
-                player[nplayer].block_x += 2;
-                showBlock(TRUE,nplayer,&player[nplayer]);
+                showBlock(FALSE,player);
+
+                iResult = recv(sock, (char *)player, sizeof(Player), 0);
+                if (iResult == SOCKET_ERROR)
+                {
+                    //ErrorHandling("connect() error!");
+                }
+                showBlock(TRUE,player);
             }
         }
         else if (GetAsyncKeyState('G') & 0x8000)
         {
-            if (checkNextSpace(nplayer,&player[nplayer]))  //checkSpace(player[nplayer].block_x, player[nplayer].block_y+1, player[nplayer].rotation,nplayer,&player[nplayer])) {
+            // send checkdown message
+            strcpy(message, "checkdown");
+            iResult = send(sock, message, (int)strlen(message), 0);
+            if (iResult == SOCKET_ERROR)
+                printf("ERROR");
+            iResult = recv(sock, &check, sizeof(check),0);
+            if (iResult == SOCKET_ERROR)
+                printf("ERROR");
+            if (check)
             {
-                moveBlock(nplayer,&player[nplayer]);
+                showBlock(FALSE,player);
+                iResult = recv(sock, (char *)player, sizeof(Player), 0);
+                if (iResult == SOCKET_ERROR)
+                {
+                    //ErrorHandling("connect() error!");
+                }
+                showBlock(TRUE,player);
             }
             else
             {
@@ -859,10 +895,18 @@ BOOL keyInput(int nplayer, Player *player, SOCKET sock)
         }
         else if (GetAsyncKeyState('A') & 0x8000)
         {
-            while(checkNextSpace(nplayer,&player[nplayer]) == FALSE)
+            strcpy(message, "checkspace");
+            iResult = send(sock, message, (int)strlen(message), 0);
+            if (iResult == SOCKET_ERROR)
+                printf("ERROR");
+
+            showBlock(FALSE,player);
+            iResult = recv(sock, (char *)player, sizeof(Player), 0);
+            if (iResult == SOCKET_ERROR)
             {
-                moveBlock(nplayer,&player[nplayer]);
+                //ErrorHandling("connect() error!");
             }
+            showBlock(TRUE,player);
             return FALSE;
         }
     }

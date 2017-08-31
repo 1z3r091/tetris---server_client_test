@@ -33,8 +33,9 @@ int main(int argc, char **argv)
     int clnt_addr_size;
     char message[30];//"Hello World!\n";
 
-    int number_to_send = 0;
-    int id = htonl(number_to_send);
+    int number_to_send = 1;
+    //int id = htonl(number_to_send);
+    char id = 1;
     BOOL check;
 
     unsigned long nonblock = 1;
@@ -105,7 +106,8 @@ int main(int argc, char **argv)
         return 1;
     }
     // send id
-    iSendResult = send( ClientSocket, &id, (int)sizeof(id), 0 );
+    Sleep(500);
+    iSendResult = send( ClientSocket, &id, sizeof(id), 0 );
     if (iSendResult == SOCKET_ERROR)
     {
         showSendError(ClientSocket);
@@ -117,10 +119,10 @@ int main(int argc, char **argv)
 
     // send initial player structure
     player[id].shape = rand() % BLOCK_NUMBER;
-    initializePlayerSetting(id,&player[id]);
-    initializeBlockSetting(id,&player[id]);
-    initializeBoard(id,&player[id]);
-    copyGameBoard(id, &player[id]);
+    initializePlayerSetting(id, &player[id]);
+    initializeBlockSetting(&player[id]);
+    initializeBoard(&player[id]);
+    copyGameBoard(&player[id]);
 
     iSendResult = send( ClientSocket, (char *)&player[id], sizeof(Player), 0 );
     if (iSendResult == SOCKET_ERROR)
@@ -129,7 +131,7 @@ int main(int argc, char **argv)
     }
 
     // Receive until the peer shuts down the connection
-    // Ïù¥Î∂ÄÎ∂ÑÏóêÏÑú ÏÑúÎ≤Ñ ÏûëÏóÖ Ï≤òÎ¶¨
+    // ¿Ã∫Œ∫–ø°º≠ º≠πˆ ¿€æ˜ √≥∏Æ
 
     do
     {
@@ -150,7 +152,7 @@ int main(int argc, char **argv)
         // check next space
         if (strcmp(message,"nextspace") == 0)
         {
-            check = checkNextSpace(id,&player[id]);
+            check = checkNextSpace(&player[id]);
 
             if (check == TRUE)
             {
@@ -176,7 +178,7 @@ int main(int argc, char **argv)
         // check testfull
         else if (strcmp(message,"testfull") == 0)
         {
-            check = testFull(id,&player[id]);
+            check = testFull(&player[id]);
 
             iSendResult = send( ClientSocket, &check, sizeof(check), 0 );
             if (iSendResult == SOCKET_ERROR)
@@ -202,7 +204,7 @@ int main(int argc, char **argv)
         // check nextstage
         else if (strcmp(message,"nextstage") == 0)
         {
-            check = checkNextStage(id,&player[id]);
+            check = checkNextStage(&player[id]);
 
             iSendResult = send( ClientSocket, &check, sizeof(check), 0 );
             if (iSendResult == SOCKET_ERROR)
@@ -216,12 +218,12 @@ int main(int argc, char **argv)
 
             if (check == TRUE)
             {
-                initializeNextStage(id, &player[id]);
-                initializeBoard(id, &player[id]);
+                initializeNextStage(&player[id]);
+                initializeBoard(&player[id]);
             }
             else if (check == FALSE)
             {
-                copyGameBoard(id, &player[id]);
+                copyGameBoard(&player[id]);
             }
 
         }
@@ -230,8 +232,8 @@ int main(int argc, char **argv)
         else if (strcmp(message,"gameover") == 0)
         {
             player[id].shape = player[id].next_shape;
-            initializeBlockSetting(id, &player[id]);
-            check = checkGameOver(id,&player[id]);
+            initializeBlockSetting(&player[id]);
+            check = checkGameOver(&player[id]);
 
             iSendResult = send( ClientSocket, &check, sizeof(check), 0 );
             if (iSendResult == SOCKET_ERROR)
@@ -245,12 +247,12 @@ int main(int argc, char **argv)
 
             if (check == FALSE)
             {
-                initializeBoard(id, &player[id]);
-                copyGameBoard(id, &player[id]);
+                initializeBoard(&player[id]);
+                copyGameBoard(&player[id]);
             }
             else if (check == TRUE)
             {
-
+                //initializeBlockSetting(&player[id]);
             }
 
 
@@ -274,7 +276,7 @@ int main(int argc, char **argv)
             {
                 temp_rotation = player[id].rotation + 1;
             }
-            check = checkSpace(player[id].block_x, player[id].block_y, temp_rotation,id, &player[id]);
+            check = checkSpace(player[id].block_x, player[id].block_y, temp_rotation, &player[id]);
 
             iSendResult = send( ClientSocket, &check, sizeof(check), 0 );
             if (iSendResult == SOCKET_ERROR)
@@ -304,7 +306,7 @@ int main(int argc, char **argv)
         // check checkleft
         else if (strcmp(message,"checkleft") == 0)
         {
-            check = checkSpace(player[id].block_x-NEXT_SPACE, player[id].block_y, player[id].rotation,id,&player[id]);
+            check = checkSpace(player[id].block_x-NEXT_SPACE, player[id].block_y, player[id].rotation,&player[id]);
 
             iSendResult = send( ClientSocket, &check, sizeof(check), 0 );
             if (iSendResult == SOCKET_ERROR)
@@ -334,7 +336,7 @@ int main(int argc, char **argv)
         // check checkright
         else if (strcmp(message,"checkright") == 0)
         {
-            check = checkSpace(player[id].block_x+NEXT_SPACE, player[id].block_y, player[id].rotation,id,&player[id]);
+            check = checkSpace(player[id].block_x+NEXT_SPACE, player[id].block_y, player[id].rotation,&player[id]);
 
             iSendResult = send( ClientSocket, &check, sizeof(check), 0 );
             if (iSendResult == SOCKET_ERROR)
@@ -364,7 +366,7 @@ int main(int argc, char **argv)
         // check checkdown
         else if (strcmp(message,"checkdown") == 0)
         {
-            check = checkNextSpace(id, &player[id]);
+            check = checkNextSpace(&player[id]);
 
             iSendResult = send( ClientSocket, &check, sizeof(check), 0 );
             if (iSendResult == SOCKET_ERROR)
@@ -395,7 +397,7 @@ int main(int argc, char **argv)
         else if (strcmp(message,"checkspace") == 0)
         {
 
-            while( (check = checkNextSpace(id, &player[id])) )
+            while( (check = checkNextSpace(&player[id])) )
             {
                 player[id].block_y += 1;
             }
@@ -437,7 +439,7 @@ int main(int argc, char **argv)
 
     // cleanup
     printf("Disconnected");
-    close(ClientSocket); /* Ïó∞Í≤∞ Ï¢ÖÎ£å */
+    close(ClientSocket); /* ø¨∞· ¡æ∑· */
     WSACleanup();
 
     return 0;

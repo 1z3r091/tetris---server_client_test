@@ -57,28 +57,28 @@ typedef enum { NOCURSOR, SOLIDCURSOR, NORMALCURSOR } CURSOR_TYPE; // setcursorty
 void setCursorType(CURSOR_TYPE c); // cursor on/off func
 void gotoXY(int x, int y); // x,y - coordinate change func
 
-void initializeBoard(int nplayer, Player *player);
-void drawCompleteBoard(int nplayer,Player *player);
-void drawBoard(int nx, int nplayer, Player *player);
-void showBlock(BOOL show, int nplayer, Player *player);
-void showNextBlock(BOOL show, int nplayer, Player *player);
-void moveBlock(int nplayer, Player *player);
-BOOL checkSpace(int x, int y, int rotation,int nplayer, Player *player);
-BOOL testFull(int nplayer, Player *player);
+void initializeBoard(Player *player);
+void drawCompleteBoard(Player *player);
+void drawBoard(Player *player);
+void showBlock(BOOL show, Player *player);
+void showNextBlock(BOOL show, Player *player);
+void moveBlock(Player *player);
+BOOL checkSpace(int x, int y, int rotation, Player *player);
+BOOL testFull(Player *player);
 BOOL keyInput(int nplayer, Player *player, SOCKET sock);
 void gameStart(int nplayer, SOCKET sock, Player *player);
 void showStartMenu(void);
-void showGameOver(int nx, int ny, int nplayer, Player *player);
-void refreshSideBoard(int nx, int nplayer, Player *player);
-void showNextStage(int nplayer, Player *player);
-void copyGameBoard(int nplayer, Player *player);
+void showGameOver(int nplayer, Player *player);
+void refreshSideBoard(Player *player);
+void showNextStage(Player *player);
+void copyGameBoard(Player *player);
 
-void initializeBlockSetting(int nplayer, Player *player);
-BOOL checkGameOver(int nplayer, Player *player);
-void showCurrentnNextBlock(int nplayer, Player *player);
+void initializeBlockSetting(Player *player);
+BOOL checkGameOver(Player *player);
+void showCurrentnNextBlock(Player *player);
 void initializePlayerSetting(int nplayer, Player *player);
-BOOL checkNextSpace(int nplayer, Player *player);
-BOOL checkNextStage(int nplayer, Player *player);
-void initializeNextStage(int nplayer, Player *player);
-void saveBlockinBoard(int nplayer, Player *player);
+BOOL checkNextSpace(Player *player);
+BOOL checkNextStage(Player *player);
+void initializeNextStage(Player *player);
+void saveBlockinBoard(Player *player);
 #endif // TETRIS_H_INCLUDED
