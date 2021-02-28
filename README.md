@@ -1,19 +1,17 @@
-# tetris with server_client
+# Tetris with server
 
-client.c, server.c
-- synchronous socket test in c
+## Description
+Tetris written in C with server
 
--------------------------------------------
+## Dependencies
+- C 
 
-1_player_client.c, 1_player_server.c
-- server can be connected to max. 1 client
+## Description of files
 
--------------------------------------------
-
-2_player_client.c, 2_player_server.c
-- server can be connected to max. 2 client
-
--------------------------------------------
-
-tetris.c, tetris.h
-- tetris code with socket
+| filename | description |
+| --- | --- |
+| client.c, server.c | Synchronous socket test|
+| tetris.c | Asynchronous socket test |
+| tetris.h | All functions used in tetris|
+| 1_player_client.c, 1_player_server.c | Tetris with max. 1 client|
+| 2_player_client.c, 2_player_server.c | Tetris with max. 2 clients|
