@@ -1,7 +1,7 @@
-# Tetris with server
+# Tetris server
 
 ## Description
-Tetris written in C with server
+Tetris server written in C 
 
 ## Dependencies
 - C 
